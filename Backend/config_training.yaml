@@ -1,0 +1,74 @@
+# Model Training Configuration for ASAP-SAS Dataset
+
+dataset:
+  train_path: "datasets/asap/train.tsv"
+  train_rel2_path: "datasets/asap/train_rel_2.tsv"
+  test_path: "datasets/asap/test.csv"
+  
+  # Column names in dataset
+  columns:
+    essay: "essay"
+    score: "score"
+    prompt: "prompt"
+    domain: "domain1_score"  # alternative score column
+
+training:
+  model_type: "regression"  # Options: regression, sbert_finetune, transformer
+  algorithm: "xgboost"      # Options: xgboost, random_forest
+  test_split: 0.15
+  random_seed: 42
+  
+  # Hyperparameters for XGBoost
+  xgboost:
+    n_estimators: 200
+    max_depth: 6
+    learning_rate: 0.1
+    subsample: 0.8
+    colsample_bytree: 0.8
+    
+  # Hyperparameters for Random Forest
+  random_forest:
+    n_estimators: 150
+    max_depth: 10
+    min_samples_split: 5
+    min_samples_leaf: 2
+
+output:
+  model_path: "models/scoring_model.pkl"
+  scaler_path: "models/feature_scaler.pkl"
+  feature_names_path: "models/feature_names.json"
+  metrics_path: "models/training_metrics.json"
+
+features:
+  # Which features to extract
+  use_sbert_embedding: true
+  use_cosine_similarity: true
+  use_logic_flow: true
+  use_contradiction: true
+  use_keyword_overlap: true
+  use_length: true
+  use_sentence_count: true
+  use_readability: true
+  
+  # Embedding dimensions
+  embedding_dims: 384  # SBERT all-MiniLM-L6-v2
+  
+  # Whether to use PCA for dimensionality reduction
+  use_pca: false
+  pca_components: 50
+
+evaluation:
+  metrics:
+    - "rmse"
+    - "mae"
+    - "r2"
+    - "qwk"  # Quadratic Weighted Kappa
+  
+  # Cross-validation
+  use_cv: true
+  cv_folds: 5
+
+logging:
+  log_training: true
+  log_predictions: true
+  verbose: true

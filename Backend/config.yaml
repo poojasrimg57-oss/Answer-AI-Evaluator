@@ -1,0 +1,102 @@
+# AnswerAI Evaluator Configuration
+
+# Local Model Configuration
+models:
+  trocr_local_path: "models/trocr-small-handwritten"  # Path to local TrOCR model
+  sbert_local_path: "models/all-MiniLM-L6-v2"         # Path to local SBERT model
+  device: "cpu"  # Device for model inference: "cpu" or "cuda" (if GPU available)
+  
+  # Model warmup (preload models on startup)
+  warmup_on_startup: true
+  
+  # Performance settings
+  enable_quantization: false  # Enable model quantization for faster inference (experimental)
+
+# Scoring Weights (must sum to 1.0)
+scoring:
+  weights:
+    similarity: 0.5      # Semantic similarity to reference answer
+    logic_flow: 0.3      # Logic coherence and flow
+    contradiction: 0.2   # Factual consistency (NLI)
+  
+  thresholds:
+    relevance: 0.5       # Minimum similarity for "relevant" flag
+    contradiction: 0.7   # Minimum score for no contradiction
+    pass_score: 0.6      # Minimum final score to pass
+
+# Image Preprocessing
+image_processing:
+  max_image_size: 4096      # Maximum dimension (width/height)
+  gaussian_blur_kernel: 5   # Kernel size for noise reduction
+  adaptive_threshold:
+    block_size: 11
+    c_constant: 2
+  dpi: 300                  # Target DPI for OCR
+
+# OCR Configuration
+ocr:
+  provider: "azure"  # Options: "azure", "local_trocr", "tesseract", "auto"
+                     # "auto" tries: local_trocr -> azure -> tesseract
+  language_hints: ["en"]
+  min_confidence: 0.3      # Minimum confidence for TrOCR (triggers fallback if below)
+  
+  # Azure Computer Vision OCR Settings
+  azure_endpoint: ""       # Set via AZURE_OCR_ENDPOINT env var
+  azure_key: ""            # Set via AZURE_OCR_KEY env var
+  azure_region: ""         # Set via AZURE_OCR_REGION env var
+  azure_timeout: 30        # Maximum time to wait for OCR result (seconds)
+  azure_poll_interval: 1   # Time between polling attempts (seconds)
+
+# NLP Text Preprocessing
+nlp:
+  remove_stopwords: true
+  lemmatization: true
+  min_word_length: 2
+  lowercase: true
+
+# SBERT Embeddings
+embeddings:
+  use_local: true  # Use local SBERT model (recommended)
+  model_name: "sentence-transformers/all-MiniLM-L6-v2"  # Remote model name (fallback)
+  # Alternative: "all-mpnet-base-v2" (more accurate, slower)
+  max_seq_length: 512
+  batch_size: 32
+
+# Semantic Analysis
+semantic_analysis:
+  min_sentence_length: 5
+  logic_markers:
+    - because
+    - therefore
+    - thus
+    - hence
+    - consequently
+    - as a result
+    - due to
+    - since
+
+# NLI Contradiction Detection
+nli:
+  model_name: "facebook/bart-large-mnli"
+  # Alternative: "roberta-large-mnli"
+  labels:
+    entailment: 0
+    neutral: 1
+    contradiction: 2
+  contradiction_penalty: 0.3  # Deduction per contradiction
+
+# API Settings
+api:
+  max_upload_size: 10485760  # 10 MB
+  allowed_extensions:
+    - jpg
+    - jpeg
+    - png
+    - pdf
+  timeout: 60  # seconds
+
+# Logging
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/evaluation.log"
